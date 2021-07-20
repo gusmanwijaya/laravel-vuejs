@@ -7,10 +7,10 @@
                         <h3 class="card-title">Data Users</h3>
                         <div class="card-tools">
                             <button
-                                class="btn btn-primary"
+                                class="btn btn-sm btn-primary"
                                 type="button"
                                 data-toggle="modal"
-                                data-target="#modalTambahUser"
+                                data-target="#modal"
                                 @click="showModal()"
                             >
                                 Tambah User
@@ -32,7 +32,26 @@
                                         <td>{{ user.name }}</td>
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.level.nama_level }}</td>
-                                        <td>Edit | Hapus</td>
+                                        <td>
+                                            <button
+                                                data-toggle="modal"
+                                                data-target="#modal"
+                                                @click="showModalEdit(user)"
+                                                type="button"
+                                                class="btn btn-sm btn-warning"
+                                            >
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+
+                                            <button
+                                                @click="deleteData(user.id)"
+                                                type="button"
+                                                class="btn btn-sm btn-danger"
+                                            >
+                                                <i class="fas fa-trash-alt"></i>
+                                                Hapus
+                                            </button>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -45,17 +64,17 @@
         <!-- Modal -->
         <div
             class="modal fade"
-            id="modalTambahUser"
+            id="modal"
             tabindex="-1"
             role="dialog"
-            aria-labelledby="modalTambahUserTitle"
+            aria-labelledby="modalTitle"
             aria-hidden="true"
         >
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalTambahUserTitle">
-                            Tambah User
+                        <h5 class="modal-title" id="modalTitle">
+                            {{ statusModal ? "Edit" : "Tambah" }} User
                         </h5>
                         <button
                             type="button"
@@ -66,7 +85,11 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form @submit.prevent="simpanData">
+                    <form
+                        @submit.prevent="
+                            statusModal ? editData() : simpanData()
+                        "
+                    >
                         <div class="modal-body">
                             <div class="form-group">
                                 <input
@@ -146,14 +169,17 @@
                             </button>
                             <button
                                 type="submit"
-                                class="btn btn-primary"
+                                class="btn"
                                 :disabled="disabled"
+                                :class="
+                                    statusModal ? 'btn-warning' : 'btn-primary'
+                                "
                             >
                                 <i
                                     v-show="loading"
                                     class="fa fa-spinner fa-spin"
                                 ></i>
-                                Tambah
+                                {{ statusModal ? "Edit" : "Tambah" }}
                             </button>
                         </div>
                     </form>
@@ -170,9 +196,11 @@ export default {
         return {
             loading: false,
             disabled: false,
+            statusModal: false,
             users: [],
             levels: [],
             form: new Form({
+                id: "",
                 name: "",
                 email: "",
                 password: "",
@@ -203,7 +231,7 @@ export default {
                 .post("http://laravel-vuejs.test/api/apiUsers", formData)
                 .then(() => {
                     Refresh.$emit("refreshData");
-                    $("#modalTambahUser").modal("hide");
+                    $("#modal").modal("hide");
                     Toast.fire({
                         icon: "success",
                         title: "Data berhasil disimpan!"
@@ -218,21 +246,115 @@ export default {
                     this.disabled = false;
                 });
         },
+        editData() {
+            this.$Progress.start();
+            this.loading = true;
+            this.disabled = true;
+
+            let formData = {
+                name: this.form.name,
+                email: this.form.email,
+                password: this.form.password,
+                level_id: this.form.level_id
+            };
+
+            this.form
+                .put(
+                    "http://laravel-vuejs.test/api/apiUsers/" + this.form.id,
+                    formData
+                )
+                .then(() => {
+                    Refresh.$emit("refreshData");
+                    $("#modal").modal("hide");
+                    Toast.fire({
+                        icon: "success",
+                        title: "Data berhasil diedit!"
+                    });
+                    this.$Progress.finish();
+                    this.loading = false;
+                    this.disabled = false;
+                })
+                .catch(() => {
+                    this.$Progress.fail();
+                    this.loading = false;
+                    this.disabled = false;
+                });
+        },
+        deleteData(id) {
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: "btn btn-success ml-2",
+                    cancelButton: "btn btn-danger"
+                },
+                buttonsStyling: false
+            });
+
+            swalWithBootstrapButtons
+                .fire({
+                    title: "Apakah kamu ingin menghapus data?",
+                    text: "Data yang sudah terhapus tidak dapat dikembalikan!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Ya, hapus!",
+                    cancelButtonText: "Tidak, batal!",
+                    reverseButtons: true
+                })
+                .then(result => {
+                    if (result.isConfirmed) {
+                        this.$Progress.start();
+
+                        this.form
+                            .delete(
+                                "http://laravel-vuejs.test/api/apiUsers/" + id
+                            )
+                            .then(() => {
+                                swalWithBootstrapButtons.fire(
+                                    "Terhapus!",
+                                    "Data berhasil dihapus.",
+                                    "success"
+                                );
+                                this.$Progress.finish();
+                                Refresh.$emit("refreshData");
+                            })
+                            .catch(() => {
+                                swalWithBootstrapButtons.fire(
+                                    "Gagal!",
+                                    "Data gagal dihapus.",
+                                    "error"
+                                );
+                                this.$Progress.fail();
+                            });
+                    } else {
+                        swalWithBootstrapButtons.fire(
+                            "Batal!",
+                            "Data tidak jadi dihapus :)",
+                            "error"
+                        );
+                    }
+                });
+        },
         showModal() {
+            this.statusModal = false;
             this.form.reset();
-            $("#modalTambahUser").modal("show");
+            $("#modal").modal("show");
+        },
+        showModalEdit(user) {
+            this.statusModal = true;
+            this.form.reset();
+            $("#modal").modal("show");
+            this.form.fill(user);
         }
     },
     mounted() {
         this.$Progress.start();
         axios
-            .get("http://laravel-vuejs.test/api/users")
+            .get("http://laravel-vuejs.test/api/apiUsers")
             .then(res => this.loadData(res.data))
             .catch(error => console.log(error));
 
         Refresh.$on("refreshData", () => {
             axios
-                .get("http://laravel-vuejs.test/api/users")
+                .get("http://laravel-vuejs.test/api/apiUsers")
                 .then(res => this.loadData(res.data))
                 .catch(error => console.log(error));
         });

@@ -79,9 +79,20 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UserRequest $request, $id)
     {
-        //
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'level_id' => $request->level_id,
+            'remember_token' => Str::random(60)
+        ];
+
+        $query = User::find($id);
+        $query->update($data);
+
+        return response()->json($query, 200);
     }
 
     /**
@@ -92,6 +103,8 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $data = User::find($id);
+        $data->delete();
+        return response()->json('User berhasil dihapus!', 200);
     }
 }

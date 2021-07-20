@@ -1890,26 +1890,249 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "DataLevel",
   data: function data() {
     return {
-      levels: []
+      levels: [],
+      loading: false,
+      disabled: false,
+      statusModal: false,
+      form: new Form({
+        id: "",
+        nama_level: ""
+      })
     };
   },
   methods: {
-    loadData: function loadData(data) {
+    readData: function readData(data) {
       this.levels = data;
+    },
+    store: function store() {
+      var _this = this;
+
+      this.$Progress.start();
+      this.loading = true;
+      this.disabled = true;
+      var formData = {
+        nama_level: this.form.nama_level
+      };
+      this.form.post("http://laravel-vuejs.test/api/level/store", formData).then(function () {
+        Refresh.$emit("refreshData");
+        $("#modal").modal("hide");
+        Toast.fire({
+          icon: "success",
+          title: "Data berhasil ditambah!"
+        });
+
+        _this.$Progress.finish();
+
+        _this.loading = false;
+        _this.disabled = false;
+      })["catch"](function () {
+        _this.$Progress.fail();
+
+        _this.loading = false;
+        _this.disabled = false;
+      });
+    },
+    update: function update() {
+      var _this2 = this;
+
+      this.$Progress.start();
+      this.loading = true;
+      this.disabled = true;
+      var formData = {
+        nama_level: this.form.nama_level
+      };
+      this.form.put("http://laravel-vuejs.test/api/level/" + this.form.id + "/update", formData).then(function () {
+        Refresh.$emit("refreshData");
+        $("#modal").modal("hide");
+        Toast.fire({
+          icon: "success",
+          title: "Data berhasil diedit!"
+        });
+
+        _this2.$Progress.finish();
+
+        _this2.loading = false;
+        _this2.disabled = false;
+      })["catch"](function () {
+        _this2.$Progress.fail();
+
+        _this2.loading = false;
+        _this2.disabled = false;
+      });
+    },
+    destroy: function destroy(id) {
+      var _this3 = this;
+
+      var swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success ml-2",
+          cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: false
+      });
+      swalWithBootstrapButtons.fire({
+        title: "Apakah kamu ingin menghapus data?",
+        text: "Data yang sudah terhapus tidak dapat dikembalikan!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus!",
+        cancelButtonText: "Tidak, batal!",
+        reverseButtons: true
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          _this3.$Progress.start();
+
+          _this3.form["delete"]("http://laravel-vuejs.test/api/level/" + id + "/destroy").then(function () {
+            swalWithBootstrapButtons.fire("Terhapus!", "Data berhasil dihapus.", "success");
+
+            _this3.$Progress.finish();
+
+            Refresh.$emit("refreshData");
+          })["catch"](function () {
+            swalWithBootstrapButtons.fire("Gagal!", "Data gagal dihapus karena data level masih digunakan di data users.", "error");
+
+            _this3.$Progress.fail();
+          });
+        } else {
+          swalWithBootstrapButtons.fire("Batal!", "Data tidak jadi dihapus :)", "error");
+        }
+      });
+    },
+    showModal: function showModal() {
+      this.statusModal = false;
+      this.form.reset();
+      $("#modal").modal("show");
+    },
+    showModalEdit: function showModalEdit(level) {
+      this.statusModal = true;
+      this.form.reset();
+      $("#modal").modal("show");
+      this.form.fill(level);
     }
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this4 = this;
 
     this.$Progress.start();
-    axios.get("http://laravel-vuejs.test/api/level").then(function (res) {
-      return _this.loadData(res.data);
-    })["catch"](function (err) {
-      return console.log(err);
+    axios.get("http://laravel-vuejs.test/api/level/index").then(function (result) {
+      return _this4.readData(result.data);
+    })["catch"](function (error) {
+      return console.log(error);
+    });
+    Refresh.$on("refreshData", function () {
+      axios.get("http://laravel-vuejs.test/api/level/index").then(function (result) {
+        return _this4.readData(result.data);
+      })["catch"](function (error) {
+        return console.log(error);
+      });
     });
     this.$Progress.finish();
   }
@@ -2093,15 +2316,43 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "DataUsers",
   data: function data() {
     return {
       loading: false,
       disabled: false,
+      statusModal: false,
       users: [],
       levels: [],
       form: new Form({
+        id: "",
         name: "",
         email: "",
         password: "",
@@ -2130,7 +2381,7 @@ __webpack_require__.r(__webpack_exports__);
       };
       this.form.post("http://laravel-vuejs.test/api/apiUsers", formData).then(function () {
         Refresh.$emit("refreshData");
-        $("#modalTambahUser").modal("hide");
+        $("#modal").modal("hide");
         Toast.fire({
           icon: "success",
           title: "Data berhasil disimpan!"
@@ -2147,30 +2398,106 @@ __webpack_require__.r(__webpack_exports__);
         _this.disabled = false;
       });
     },
+    editData: function editData() {
+      var _this2 = this;
+
+      this.$Progress.start();
+      this.loading = true;
+      this.disabled = true;
+      var formData = {
+        name: this.form.name,
+        email: this.form.email,
+        password: this.form.password,
+        level_id: this.form.level_id
+      };
+      this.form.put("http://laravel-vuejs.test/api/apiUsers/" + this.form.id, formData).then(function () {
+        Refresh.$emit("refreshData");
+        $("#modal").modal("hide");
+        Toast.fire({
+          icon: "success",
+          title: "Data berhasil diedit!"
+        });
+
+        _this2.$Progress.finish();
+
+        _this2.loading = false;
+        _this2.disabled = false;
+      })["catch"](function () {
+        _this2.$Progress.fail();
+
+        _this2.loading = false;
+        _this2.disabled = false;
+      });
+    },
+    deleteData: function deleteData(id) {
+      var _this3 = this;
+
+      var swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success ml-2",
+          cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: false
+      });
+      swalWithBootstrapButtons.fire({
+        title: "Apakah kamu ingin menghapus data?",
+        text: "Data yang sudah terhapus tidak dapat dikembalikan!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus!",
+        cancelButtonText: "Tidak, batal!",
+        reverseButtons: true
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          _this3.$Progress.start();
+
+          _this3.form["delete"]("http://laravel-vuejs.test/api/apiUsers/" + id).then(function () {
+            swalWithBootstrapButtons.fire("Terhapus!", "Data berhasil dihapus.", "success");
+
+            _this3.$Progress.finish();
+
+            Refresh.$emit("refreshData");
+          })["catch"](function () {
+            swalWithBootstrapButtons.fire("Gagal!", "Data gagal dihapus.", "error");
+
+            _this3.$Progress.fail();
+          });
+        } else {
+          swalWithBootstrapButtons.fire("Batal!", "Data tidak jadi dihapus :)", "error");
+        }
+      });
+    },
     showModal: function showModal() {
+      this.statusModal = false;
       this.form.reset();
-      $("#modalTambahUser").modal("show");
+      $("#modal").modal("show");
+    },
+    showModalEdit: function showModalEdit(user) {
+      this.statusModal = true;
+      this.form.reset();
+      $("#modal").modal("show");
+      this.form.fill(user);
     }
   },
   mounted: function mounted() {
-    var _this2 = this;
+    var _this4 = this;
 
     this.$Progress.start();
-    axios.get("http://laravel-vuejs.test/api/users").then(function (res) {
-      return _this2.loadData(res.data);
+    axios.get("http://laravel-vuejs.test/api/apiUsers").then(function (res) {
+      return _this4.loadData(res.data);
     })["catch"](function (error) {
       return console.log(error);
     });
     Refresh.$on("refreshData", function () {
-      axios.get("http://laravel-vuejs.test/api/users").then(function (res) {
-        return _this2.loadData(res.data);
+      axios.get("http://laravel-vuejs.test/api/apiUsers").then(function (res) {
+        return _this4.loadData(res.data);
       })["catch"](function (error) {
         return console.log(error);
       });
     });
     this.$Progress.finish();
     axios.get("http://laravel-vuejs.test/api/level").then(function (res) {
-      return _this2.loadDataLevel(res.data);
+      return _this4.loadDataLevel(res.data);
     })["catch"](function (error) {
       return console.log(error);
     });
@@ -42491,7 +42818,33 @@ var render = function() {
     _c("div", { staticClass: "row justify-content-center" }, [
       _c("div", { staticClass: "col-md-8" }, [
         _c("div", { staticClass: "card" }, [
-          _c("div", { staticClass: "card-header" }, [_vm._v("Data Level")]),
+          _c("div", { staticClass: "card-header" }, [
+            _c("h3", { staticClass: "card-title" }, [_vm._v("Data Level")]),
+            _vm._v(" "),
+            _c("div", { staticClass: "card-tools" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-sm btn-primary",
+                  attrs: {
+                    type: "button",
+                    "data-toggle": "modal",
+                    "data-target": "#modal"
+                  },
+                  on: {
+                    click: function($event) {
+                      return _vm.showModal()
+                    }
+                  }
+                },
+                [
+                  _vm._v(
+                    "\n                            Tambah Level\n                        "
+                  )
+                ]
+              )
+            ])
+          ]),
           _vm._v(" "),
           _c("div", { staticClass: "card-body" }, [
             _c("div", { staticClass: "form-group" }, [
@@ -42506,7 +42859,49 @@ var render = function() {
                       return _c("tr", { key: level.id }, [
                         _c("td", [_vm._v(_vm._s(level.nama_level))]),
                         _vm._v(" "),
-                        _c("td", [_vm._v("Edit | Hapus")])
+                        _c("td", [
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-warning",
+                              attrs: {
+                                "data-toggle": "modal",
+                                "data-target": "#modal",
+                                type: "button"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.showModalEdit(level)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fas fa-edit" }),
+                              _vm._v(
+                                "\n                                            Edit\n                                        "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-danger",
+                              attrs: { type: "button" },
+                              on: {
+                                click: function($event) {
+                                  return _vm.destroy(level.id)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fas fa-trash-alt" }),
+                              _vm._v(
+                                "\n                                            Hapus\n                                        "
+                              )
+                            ]
+                          )
+                        ])
                       ])
                     })
                   ],
@@ -42517,7 +42912,151 @@ var render = function() {
           ])
         ])
       ])
-    ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "modal",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "modalTitle",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c(
+          "div",
+          {
+            staticClass: "modal-dialog modal-dialog-centered",
+            attrs: { role: "document" }
+          },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _c("div", { staticClass: "modal-header" }, [
+                _c(
+                  "h5",
+                  { staticClass: "modal-title", attrs: { id: "modalTitle" } },
+                  [
+                    _vm._v(
+                      "\n                        " +
+                        _vm._s(_vm.statusModal ? "Edit" : "Tambah") +
+                        " Level\n                    "
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _vm._m(1)
+              ]),
+              _vm._v(" "),
+              _c(
+                "form",
+                {
+                  on: {
+                    submit: function($event) {
+                      $event.preventDefault()
+                      _vm.statusModal ? _vm.update() : _vm.store()
+                    }
+                  }
+                },
+                [
+                  _c("div", { staticClass: "modal-body" }, [
+                    _c(
+                      "div",
+                      { staticClass: "form-group" },
+                      [
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.form.nama_level,
+                              expression: "form.nama_level"
+                            }
+                          ],
+                          staticClass: "form-control",
+                          class: {
+                            "is-invalid": _vm.form.errors.has("nama_level")
+                          },
+                          attrs: {
+                            id: "nama_level",
+                            name: "nama_level",
+                            type: "text",
+                            placeholder: "Nama Level"
+                          },
+                          domProps: { value: _vm.form.nama_level },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(
+                                _vm.form,
+                                "nama_level",
+                                $event.target.value
+                              )
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c("HasError", {
+                          attrs: { form: _vm.form, field: "nama_level" }
+                        })
+                      ],
+                      1
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "modal-footer" }, [
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-secondary",
+                        attrs: { type: "button", "data-dismiss": "modal" }
+                      },
+                      [
+                        _vm._v(
+                          "\n                            Close\n                        "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn",
+                        class: _vm.statusModal ? "btn-warning" : "btn-primary",
+                        attrs: { type: "submit", disabled: _vm.disabled }
+                      },
+                      [
+                        _c("i", {
+                          directives: [
+                            {
+                              name: "show",
+                              rawName: "v-show",
+                              value: _vm.loading,
+                              expression: "loading"
+                            }
+                          ],
+                          staticClass: "fa fa-spinner fa-spin"
+                        }),
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.statusModal ? "Edit" : "Tambah") +
+                            "\n                        "
+                        )
+                      ]
+                    )
+                  ])
+                ]
+              )
+            ])
+          ]
+        )
+      ]
+    )
   ])
 }
 var staticRenderFns = [
@@ -42530,6 +43069,23 @@ var staticRenderFns = [
       _vm._v(" "),
       _c("th", [_vm._v("Aksi")])
     ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "modal",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
   }
 ]
 render._withStripped = true
@@ -42565,11 +43121,11 @@ var render = function() {
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-primary",
+                  staticClass: "btn btn-sm btn-primary",
                   attrs: {
                     type: "button",
                     "data-toggle": "modal",
-                    "data-target": "#modalTambahUser"
+                    "data-target": "#modal"
                   },
                   on: {
                     click: function($event) {
@@ -42603,7 +43159,49 @@ var render = function() {
                         _vm._v(" "),
                         _c("td", [_vm._v(_vm._s(user.level.nama_level))]),
                         _vm._v(" "),
-                        _c("td", [_vm._v("Edit | Hapus")])
+                        _c("td", [
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-warning",
+                              attrs: {
+                                "data-toggle": "modal",
+                                "data-target": "#modal",
+                                type: "button"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.showModalEdit(user)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fas fa-edit" }),
+                              _vm._v(
+                                " Edit\n                                        "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-sm btn-danger",
+                              attrs: { type: "button" },
+                              on: {
+                                click: function($event) {
+                                  return _vm.deleteData(user.id)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "fas fa-trash-alt" }),
+                              _vm._v(
+                                "\n                                            Hapus\n                                        "
+                              )
+                            ]
+                          )
+                        ])
                       ])
                     })
                   ],
@@ -42621,10 +43219,10 @@ var render = function() {
       {
         staticClass: "modal fade",
         attrs: {
-          id: "modalTambahUser",
+          id: "modal",
           tabindex: "-1",
           role: "dialog",
-          "aria-labelledby": "modalTambahUserTitle",
+          "aria-labelledby": "modalTitle",
           "aria-hidden": "true"
         }
       },
@@ -42637,7 +43235,21 @@ var render = function() {
           },
           [
             _c("div", { staticClass: "modal-content" }, [
-              _vm._m(1),
+              _c("div", { staticClass: "modal-header" }, [
+                _c(
+                  "h5",
+                  { staticClass: "modal-title", attrs: { id: "modalTitle" } },
+                  [
+                    _vm._v(
+                      "\n                        " +
+                        _vm._s(_vm.statusModal ? "Edit" : "Tambah") +
+                        " User\n                    "
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _vm._m(1)
+              ]),
               _vm._v(" "),
               _c(
                 "form",
@@ -42645,7 +43257,7 @@ var render = function() {
                   on: {
                     submit: function($event) {
                       $event.preventDefault()
-                      return _vm.simpanData.apply(null, arguments)
+                      _vm.statusModal ? _vm.editData() : _vm.simpanData()
                     }
                   }
                 },
@@ -42866,7 +43478,8 @@ var render = function() {
                     _c(
                       "button",
                       {
-                        staticClass: "btn btn-primary",
+                        staticClass: "btn",
+                        class: _vm.statusModal ? "btn-warning" : "btn-primary",
                         attrs: { type: "submit", disabled: _vm.disabled }
                       },
                       [
@@ -42882,7 +43495,9 @@ var render = function() {
                           staticClass: "fa fa-spinner fa-spin"
                         }),
                         _vm._v(
-                          "\n                            Tambah\n                        "
+                          "\n                            " +
+                            _vm._s(_vm.statusModal ? "Edit" : "Tambah") +
+                            "\n                        "
                         )
                       ]
                     )
@@ -42915,26 +43530,18 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-header" }, [
-      _c(
-        "h5",
-        { staticClass: "modal-title", attrs: { id: "modalTambahUserTitle" } },
-        [_vm._v("\n                        Tambah User\n                    ")]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          staticClass: "close",
-          attrs: {
-            type: "button",
-            "data-dismiss": "modal",
-            "aria-label": "Close"
-          }
-        },
-        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-      )
-    ])
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "modal",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
   }
 ]
 render._withStripped = true

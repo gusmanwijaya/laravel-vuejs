@@ -20,7 +20,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('level', [LevelController::class, 'index']);
-Route::get('users', [UserController::class, 'index']);
+Route::get('level/index', [LevelController::class, 'index']);
+Route::post('level/store', [LevelController::class, 'store']);
+Route::put('level/{id}/update', [LevelController::class, 'update']);
+Route::delete('level/{id}/destroy', [LevelController::class, 'destroy']);
 
 Route::apiResources(['apiUsers' => UserController::class]);
