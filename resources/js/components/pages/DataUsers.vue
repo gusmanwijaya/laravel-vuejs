@@ -162,7 +162,12 @@ export default {
             axios
                 .post("http://laravel-vuejs.test/api/apiUsers", formData)
                 .then(() => {
+                    Refresh.$emit("refreshData");
                     $("#modalTambahUser").modal("hide");
+                    Toast.fire({
+                        icon: "success",
+                        title: "Data berhasil disimpan!"
+                    });
                 })
                 .catch(error => console.log(error));
         },
@@ -176,6 +181,13 @@ export default {
             .get("http://laravel-vuejs.test/api/users")
             .then(res => this.loadData(res.data))
             .catch(error => console.log(error));
+
+        Refresh.$on("refreshData", () => {
+            axios
+                .get("http://laravel-vuejs.test/api/users")
+                .then(res => this.loadData(res.data))
+                .catch(error => console.log(error));
+        });
 
         axios
             .get("http://laravel-vuejs.test/api/level")
