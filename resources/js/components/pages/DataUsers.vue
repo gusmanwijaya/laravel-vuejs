@@ -66,31 +66,51 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form @submit.prevent="simpanData()">
+                    <form @submit.prevent="simpanData">
                         <div class="modal-body">
                             <div class="form-group">
                                 <input
+                                    id="name"
+                                    name="name"
                                     type="text"
                                     class="form-control"
                                     placeholder="Nama User"
                                     v-model="form.name"
+                                    :class="{
+                                        'is-invalid': form.errors.has('name')
+                                    }"
                                 />
+                                <HasError :form="form" field="name" />
                             </div>
                             <div class="form-group">
                                 <input
+                                    id="email"
+                                    name="email"
                                     type="email"
                                     class="form-control"
                                     placeholder="Email Address"
                                     v-model="form.email"
+                                    :class="{
+                                        'is-invalid': form.errors.has('email')
+                                    }"
                                 />
+                                <HasError :form="form" field="email" />
                             </div>
                             <div class="form-group">
                                 <input
+                                    id="password"
+                                    name="password"
                                     type="password"
                                     class="form-control"
                                     placeholder="Password"
                                     v-model="form.password"
+                                    :class="{
+                                        'is-invalid': form.errors.has(
+                                            'password'
+                                        )
+                                    }"
                                 />
+                                <HasError :form="form" field="password" />
                             </div>
                             <div class="form-group">
                                 <select
@@ -98,6 +118,11 @@
                                     id="level_id"
                                     class="form-control select2"
                                     v-model="form.level_id"
+                                    :class="{
+                                        'is-invalid': form.errors.has(
+                                            'level_id'
+                                        )
+                                    }"
                                 >
                                     <option value=""></option>
                                     <option
@@ -108,6 +133,7 @@
                                         {{ level.nama_level }}
                                     </option>
                                 </select>
+                                <HasError :form="form" field="level_id" />
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -118,7 +144,15 @@
                             >
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-primary">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="disabled"
+                            >
+                                <i
+                                    v-show="loading"
+                                    class="fa fa-spinner fa-spin"
+                                ></i>
                                 Tambah
                             </button>
                         </div>
@@ -134,6 +168,8 @@ export default {
     name: "DataUsers",
     data() {
         return {
+            loading: false,
+            disabled: false,
             users: [],
             levels: [],
             form: new Form({
@@ -152,6 +188,10 @@ export default {
             this.levels = data;
         },
         simpanData() {
+            this.$Progress.start();
+            this.loading = true;
+            this.disabled = true;
+
             let formData = {
                 name: this.form.name,
                 email: this.form.email,
@@ -159,7 +199,7 @@ export default {
                 level_id: this.form.level_id
             };
 
-            axios
+            this.form
                 .post("http://laravel-vuejs.test/api/apiUsers", formData)
                 .then(() => {
                     Refresh.$emit("refreshData");
@@ -168,8 +208,15 @@ export default {
                         icon: "success",
                         title: "Data berhasil disimpan!"
                     });
+                    this.$Progress.finish();
+                    this.loading = false;
+                    this.disabled = false;
                 })
-                .catch(error => console.log(error));
+                .catch(() => {
+                    this.$Progress.fail();
+                    this.loading = false;
+                    this.disabled = false;
+                });
         },
         showModal() {
             this.form.reset();
@@ -177,6 +224,7 @@ export default {
         }
     },
     mounted() {
+        this.$Progress.start();
         axios
             .get("http://laravel-vuejs.test/api/users")
             .then(res => this.loadData(res.data))
@@ -188,6 +236,7 @@ export default {
                 .then(res => this.loadData(res.data))
                 .catch(error => console.log(error));
         });
+        this.$Progress.finish();
 
         axios
             .get("http://laravel-vuejs.test/api/level")

@@ -41,10 +41,12 @@ export default {
         }
     },
     mounted() {
+        this.$Progress.start();
         axios
             .get("http://laravel-vuejs.test/api/level")
             .then(res => this.loadData(res.data))
             .catch(err => console.log(err));
+        this.$Progress.finish();
     }
 };
 </script>

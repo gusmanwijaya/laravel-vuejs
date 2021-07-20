@@ -9,6 +9,7 @@ import VueRouter from "vue-router";
 import DataUsers from "./components/pages/DataUsers.vue";
 import DataLevel from "./components/pages/DataLevel.vue";
 import Swal from "sweetalert2";
+import VueProgressBar from "vue-progressbar";
 
 // START: Form input vform
 window.Form = Form;
@@ -31,6 +32,22 @@ const Toast = Swal.mixin({
 });
 window.Toast = Toast;
 // END: Sweetalert2
+
+// START: Vue-progressbar
+Vue.use(VueProgressBar, {
+    color: "rgb(143, 255, 199)",
+    failedColor: "red",
+    thickness: "5px",
+    transition: {
+        speed: "0.2s",
+        opacity: "0.6s",
+        termination: 300
+    },
+    autoRevert: true,
+    location: "top",
+    inverse: false
+});
+// END: Vue-progressbar
 
 // START: Vue-router
 Vue.use(VueRouter);
